@@ -3,9 +3,19 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-# Memuat model
 model = joblib.load("model_penjualan.pkl")
 batas = joblib.load("batas_penjualan.pkl")
+
+st.write("Kolom yang dikirim aplikasi:")
+st.write(data_baru.columns.tolist())
+
+st.write("Kolom yang dibutuhkan model:")
+st.write(model.feature_names_in_.tolist())
+
+kolom_hilang = set(model.feature_names_in_) - set(data_baru.columns)
+
+st.write("Kolom yang belum tersedia:")
+st.write(list(kolom_hilang))
 
 st.set_page_config(
     page_title="Prediksi Penjualan",
