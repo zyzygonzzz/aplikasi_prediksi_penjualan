@@ -3,25 +3,14 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-model = joblib.load("model_penjualan.pkl")
-batas = joblib.load("batas_penjualan.pkl")
-
-st.write("Kolom yang dikirim aplikasi:")
-st.write(data_baru.columns.tolist())
-
-st.write("Kolom yang dibutuhkan model:")
-st.write(model.feature_names_in_.tolist())
-
-kolom_hilang = set(model.feature_names_in_) - set(data_baru.columns)
-
-st.write("Kolom yang belum tersedia:")
-st.write(list(kolom_hilang))
-
 st.set_page_config(
     page_title="Prediksi Penjualan",
     page_icon="📊",
     layout="centered"
 )
+
+model = joblib.load("model_penjualan.pkl")
+batas = joblib.load("batas_penjualan.pkl")
 
 st.title("📊 Aplikasi Klasifikasi Penjualan")
 st.write(
@@ -29,70 +18,64 @@ st.write(
     "menggunakan algoritma Decision Tree."
 )
 
-st.info(
-    f"Batas kategori penjualan: {batas:.2f}"
-)
+st.info(f"Batas kategori penjualan: {batas:.2f}")
 
 st.subheader("Input Data Transaksi")
 
-branch = st.selectbox("Cabang", ["A", "B", "C"])
-
-city = st.selectbox(
-    "Kota",
-    ["Yangon", "Mandalay", "Naypyitaw"]
+ship_mode = st.selectbox(
+    "Metode Pengiriman",
+    ["Second Class", "Standard Class", "First Class", "Same Day"]
 )
 
-customer = st.selectbox(
-    "Jenis Pelanggan",
-    ["Member", "Normal"]
+segment = st.selectbox(
+    "Segmen Konsumen",
+    ["Consumer", "Corporate", "Home Office"]
 )
 
-gender = st.selectbox(
-    "Jenis Kelamin",
-    ["Male", "Female"]
+region = st.selectbox(
+    "Wilayah",
+    ["Central", "East", "South", "West"]
 )
 
-product = st.selectbox(
+category = st.selectbox(
     "Kategori Produk",
+    ["Furniture", "Office Supplies", "Technology"]
+)
+
+sub_category = st.selectbox(
+    "Sub-Kategori Produk",
     [
-        "Health and beauty",
-        "Electronic accessories",
-        "Home and lifestyle",
-        "Sports and travel",
-        "Food and beverages",
-        "Fashion accessories"
+        "Accessories", "Appliances", "Art", "Binders",
+        "Bookcases", "Chairs", "Copiers", "Envelopes",
+        "Fasteners", "Furnishings", "Labels", "Machines",
+        "Paper", "Phones", "Storage", "Supplies", "Tables"
     ]
 )
 
-unit_price = st.number_input(
-    "Harga Satuan",
-    min_value=0.01,
-    value=50.0
+order_month = st.selectbox(
+    "Bulan Transaksi",
+    list(range(1, 13))
 )
 
-quantity = st.number_input(
-    "Jumlah Barang",
-    min_value=1,
-    max_value=100,
-    value=5
-)
-
-payment = st.selectbox(
-    "Metode Pembayaran",
-    ["Cash", "Credit card", "Ewallet"]
+order_day = st.selectbox(
+    "Hari Transaksi (0 = Senin, 6 = Minggu)",
+    list(range(7))
 )
 
 if st.button("Prediksi Penjualan"):
+
     data_baru = pd.DataFrame([{
-        "Branch": branch,
-        "City": city,
-        "Customer type": customer,
-        "Gender": gender,
-        "Product line": product,
-        "Unit price": unit_price,
-        "Quantity": quantity,
-        "Payment": payment
+        "Ship Mode": ship_mode,
+        "Segment": segment,
+        "Region": region,
+        "Category": category,
+        "Sub-Category": sub_category,
+        "Order_Month": order_month,
+        "Order_Day": order_day
     }])
+
+    st.write("Data yang akan diprediksi:")
+    st.dataframe(data_baru)
 
     hasil = model.predict(data_baru)[0]
 
@@ -103,5 +86,7 @@ if st.button("Prediksi Penjualan"):
     else:
         st.warning("Kategori Penjualan: RENDAH")
 
-    st.write("Hasil ini merupakan klasifikasi "
-             "berdasarkan model Decision Tree.")
+    st.write(
+        "Hasil ini merupakan klasifikasi berdasarkan "
+        "model Decision Tree."
+    )
